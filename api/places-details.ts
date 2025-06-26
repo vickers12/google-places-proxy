@@ -1,8 +1,18 @@
-// api/places-details.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type,X-Goog-Api-Key,X-Goog-SessionToken,X-Goog-FieldMask"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end(); // Handle preflight
+  }
+
   const { placeId, languageCode } = req.query;
 
   if (!placeId || typeof placeId !== "string") {
@@ -10,7 +20,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const headers: Record<string, string> = {};
-
   const allowedHeaders = [
     "x-goog-api-key",
     "x-goog-sessiontoken",
@@ -19,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   allowedHeaders.forEach((key) => {
     const value = req.headers[key] as string;
-    if (value) headers[key.replace(/^x/, "X")] = value; // capitalize to match Google spec
+    if (value) headers[key.replace(/^x/, "X")] = value; // Proper capitalization
   });
 
   let url = `https://places.googleapis.com/v1/places/${placeId}`;
@@ -31,7 +40,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const response = await axios.get(url, { headers });
     res.status(200).json(response.data);
   } catch (error: any) {
-    console.error("Google Places API error:", error.message);
     res.status(500).json({ error: error.message });
   }
 }
