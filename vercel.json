@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "vercel-node@canary"
+  "rewrites": [
+    {
+      "source": "/places-details/:placeId",
+      "destination": "/api/places-details"
     }
-  }
+  ]
 }
